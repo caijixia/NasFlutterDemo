@@ -11,7 +11,7 @@ buildscript {
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
 
         //snapshot
@@ -29,7 +29,9 @@ allprojects {
         google()
         jcenter()
 //        maven { url 'https://oss.jfrog.org/oss-snapshot-local/' }
-//        maven { url 'https://dl.bintray.com/caijixia/nas-public' }
+
+        //personal-jcenter库地址
+        maven { url 'https://dl.bintray.com/caijixia/nas-public' }
     }
     tasks.withType(Javadoc) {
         options.addStringOption('Xdoclint:none', '-quiet')
@@ -62,12 +64,12 @@ ext {
             group: 'im.yixin.sdk.nas',
     ]
     jcenter.website = [
-            git : 'https://github.com/Javen205/JPay.git',
-            site: 'https://github.com/Javen205/JPay'
+            git : 'https://github.com/caijixia/NasFlutterDemo.git',
+            site: 'https://github.com/caijixia/NasFlutterDemo'
     ]
     jcenter.versions = [
-            'nas_sdk'         : '0.0.4-alpha',
-            'nas_flutter_core': '0.0.1-alpha'
+            'nas_sdk'         : '0.0.1-alpha',
+            'nas_flutter_core': '0.0.2-alpha'
     ]
     //上传配置
     bintray = [

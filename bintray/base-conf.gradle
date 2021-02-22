@@ -10,11 +10,11 @@ task javadoc(type: Javadoc) {
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 
-afterEvaluate {
-    javadoc.classpath += files(android.libraryVariants.collect { variant ->
-        variant.javaCompile.classpath.files
-    })
-}
+//afterEvaluate {
+//    javadoc.classpath += files(android.libraryVariants.collect { variant ->
+//        variant.javaCompile.classpath.files
+//    })
+//}
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
@@ -28,7 +28,8 @@ artifacts {
 
 def _bintray = rootProject.ext.bintray
 
-group = _bintray.group
+def _group = _bintray.group
+group = _group
 version = _bintray.version
 android.defaultConfig.versionName = version
 
@@ -51,7 +52,7 @@ install {
             project {
                 packaging 'aar'
                 name _bintray.artifact
-                groupId group
+                groupId _group
                 artifactId _bintray.artifact
                 version _bintray.version
                 url _bintray.website

@@ -10,6 +10,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 30
         versionCode 1
+//        versionName "${rootProject.ext.jcenter.versions.nas_sdk}"
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -43,7 +44,12 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    implementation project(':flutter')
+//    implementation project(':flutter')
+//    if (useDepends) {
+        implementation "im.yixin.sdk.nas:nas-flutter-core:${rootProject.ext.jcenter.versions.nas_flutter_core}@aar"
+//    } else {
+//        implementation project(':flutter')
+//    }
 }
 
 apply from: '../bintray/sdk-jcenter.gradle'
@@ -89,3 +95,13 @@ task upload {
         println "result:\n $result"
     }
 }
+
+Task cleanTask = project.tasks.findByName('clean')
+Task buildTask = project.tasks.findByName('build')
+Task uploadTask = project.tasks.findByName('bintrayUpload')
+
+task uploadRelease(dependsOn: [uploadTask,])
+
+//tasks.whenTaskAdded { task ->
+//    println ">> task.name: " + task.name
+//}
