@@ -1,0 +1,138 @@
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+afterEvaluate {
+    javadoc.classpath += files(android.libraryVariants.collect { variant ->
+        variant.javaCompile.classpath.files
+    })
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+def _bintray = rootProject.ext.bintray
+
+group = _bintray.group
+version = _bintray.version
+android.defaultConfig.versionName = version
+
+javadoc {
+    options {
+        encoding "UTF-8"
+        charSet 'UTF-8'
+        author true
+        version version
+        links "http://docs.oracle.com/javase/7/docs/api"
+        title _bintray.artifact
+    }
+}
+
+//生成pom.xml
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                name _bintray.artifact
+                groupId group
+                artifactId _bintray.artifact
+                version _bintray.version
+                url _bintray.website
+                // Set your license
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer { //填写的一些基本信息
+                        name 'caijixia'
+                        email 'cai_jixia@163.com'
+                    }
+                }
+                scm {
+                    connection _bintray.git
+                    developerConnection _bintray.git
+                    url _bintray.website
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = _bintray.user
+    key = _bintray.key
+    configurations = ['archives']
+
+//    publications = ['mavenJava'] //
+//    publish = true //
+
+    pkg {
+        repo = _bintray.repo
+        name = _bintray.artifact
+        websiteUrl = _bintray.website
+        vcsUrl = _bintray.git
+        licenses = ["Apache-2.0"]
+        publish = true
+        version {
+            name = version
+        }
+    }
+}
+
+//发布snapshot版本
+//apply plugin: "com.jfrog.artifactory"
+//apply plugin: 'maven-publish'
+//
+//publishing {
+//    publications {
+//        mavenArr(MavenPublication) {
+//            groupId _bintray.group
+//            version = _bintray.version
+//            artifactId _bintray.artifact
+//            // Tell maven to prepare the generated "*.aar" file for publishing
+//            artifact("$buildDir/outputs/aar/${project.name}-release.aar")
+//        }
+//    }
+//}
+//
+//artifactory {
+//    contextUrl = 'http://oss.jfrog.org'
+//    //The base Artifactory URL if not overridden by the publisher/resolver
+//    resolve {
+//        repository {
+//            repoKey = 'jcenter'
+//        }
+//    }
+//    publish {
+//        repository {
+//            repoKey = 'oss-snapshot-local' //The Artifactory repository key to publish to
+//            username = _bintray.user
+//            password = _bintray.key
+//        }
+//        defaults {
+////            publications('mavenArr')
+//            publishArtifacts = true
+//            publishPom = true
+//        }
+//    }
+//}

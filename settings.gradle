@@ -1,0 +1,11 @@
+include ':nasFlutterSDK'
+setBinding(new Binding([gradle: this]))
+evaluate(new File(
+  settingsDir,
+  '../flutter_demo_module_alpha/.android/include_flutter.groovy'
+))
+include ':app'
+rootProject.name = "NasFlutterDemoEmbed"
+
+include ':flutter_demo_module_alpha'
+project(':flutter_demo_module_alpha').projectDir = new File('../flutter_demo_module_alpha')

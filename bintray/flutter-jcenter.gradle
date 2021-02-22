@@ -1,0 +1,6 @@
+//将本次【上传配置】保存到全局变量中
+rootProject.ext.bintray.artifact = 'nas-flutter-core' //定义模块name
+rootProject.ext.bintray.version = rootProject.ext.jcenter.versions.nas_flutter_core //定义模块上传版本
+
+def basePath = rootProject.rootDir.path + File.separator + 'bintray/base-conf.gradle'
+apply from: basePath
