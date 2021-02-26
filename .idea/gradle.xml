@@ -10,6 +10,9 @@
         <option name="gradleJvm" value="1.8" />
         <option name="modules">
           <set>
+            <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/fijkplayer-0.8.7/android" />
+            <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/fluttertoast-7.1.8/android" />
+            <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/permission_handler-5.1.0+2/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/nasFlutterSDK" />

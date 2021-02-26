@@ -39,12 +39,12 @@ class MainActivity : AppCompatActivity() {
 
         var index = 0
         textArray.forEach {
-//            if (index == _initIndex) {
-//                fragments.add(YXNasSDK.init(this))
-//            } else {
-//                fragments.add(DemoFragment.createDemo(it))
-//            }
-            fragments.add(DemoFragment.createDemo(it))
+            if (index == _initIndex) {
+                fragments.add(NasDemoApp.sNasProxy!!.obtainFlutterHost())
+            } else {
+                fragments.add(DemoFragment.createDemo(it))
+            }
+//            fragments.add(DemoFragment.createDemo(it))
             index++
         }
         vp_fragments.offscreenPageLimit = fragments.size - 1
