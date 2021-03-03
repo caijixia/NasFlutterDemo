@@ -33,6 +33,7 @@ allprojects {
 
         //personal-jcenter库地址
         maven { url 'https://dl.bintray.com/caijixia/nas-public' }
+        maven { url 'https://jitpack.io' }
     }
     tasks.withType(Javadoc) {
         options.addStringOption('Xdoclint:none', '-quiet')
@@ -81,8 +82,17 @@ ext {
             user   : jcenter.account.user,
             key    : jcenter.account.key
     ]
-}
 
-//def _bintray = ext.bintray
+    //构建配置
+    build_conf = [
+            package_name: 'im.yixin.nas.demo',
+            versions    : [
+                    min_sdk_version   : 16,
+                    target_sdk_version: 29,
+                    version_code      : 1,
+                    version_name      : '1.0.0'
+            ]
+    ]
+}
 
 tasks.getByPath(':nasFlutterSDK:javadoc').enabled = false

@@ -1,0 +1,11 @@
+ext {
+    build_conf = [
+            package_name: 'im.yixin.nas.demo',
+            versions    : [
+                    min_sdk_version   : 16,
+                    target_sdk_version: 29,
+                    version_code      : 1,
+                    version_name      : '1.0.0'
+            ]
+    ]
+}

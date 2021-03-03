@@ -18,4 +18,10 @@ class MyFragmentAdapter<T : Fragment> : FragmentStatePagerAdapter {
     override fun getCount(): Int = fragments.size
 
     override fun getItem(position: Int): Fragment = fragments[position]
+
+//    fun updateItems(fragments: ArrayList<T>) {
+//        fragments.clear()
+//        fragments.addAll(fragments)
+//        notifyDataSetChanged()
+//    }
 }

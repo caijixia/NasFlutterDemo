@@ -1,19 +1,20 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-
 apply plugin: 'com.kezong.fat-aar'
+
+def buildConf = rootProject.ext.build_conf
 
 android {
     compileSdkVersion 30
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        minSdkVersion 17
-        targetSdkVersion 30
         versionCode 1
-//        versionName "${rootProject.ext.jcenter.versions.nas_sdk}"
         versionName "1.0"
+
+        minSdkVersion buildConf.versions.min_sdk_version
+        targetSdkVersion buildConf.versions.target_sdk_version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

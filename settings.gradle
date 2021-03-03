@@ -1,11 +1,29 @@
 include ':nasFlutterSDK'
 setBinding(new Binding([gradle: this]))
-evaluate(new File(
-  settingsDir,
-  '../flutter_demo_module_alpha/.android/include_flutter.groovy'
-))
+
+//evaluate(new File(
+//  settingsDir,
+//  '../flutter_demo_module_alpha/.android/include_flutter.groovy'
+//))
+
 include ':app'
 rootProject.name = "NasFlutterDemoEmbed"
 
-include ':flutter_demo_module_alpha'
-project(':flutter_demo_module_alpha').projectDir = new File('../flutter_demo_module_alpha')
+//include ':flutter_demo_module_alpha'
+//project(':flutter_demo_module_alpha').projectDir = new File('../flutter_demo_module_alpha')
+
+// 引入nas-flutter主工程
+def nas_flutter_workspace= '../flutter-nas/cloud_nas_flutter'
+evaluate(new File(settingsDir, "$nas_flutter_workspace/android/include_flutter.groovy"))
+
+def localPropertiesFile = new File("$nas_flutter_workspace/android", "local.properties")
+def properties = new Properties()
+assert localPropertiesFile.exists()
+localPropertiesFile.withReader("UTF-8") { reader -> properties.load(reader) }
+def flutterSdkPath = properties.getProperty("flutter.sdk")
+assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+apply from: "$flutterSdkPath/packages/flutter_tools/gradle/app_plugin_loader.gradle"
+
+include ':nas-flutter'
+project(':nas-flutter').projectDir = new File(settingsDir, nas_flutter_workspace)
+

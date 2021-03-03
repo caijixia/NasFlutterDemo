@@ -5,21 +5,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
-import com.google.gson.Gson
+import im.yixin.nas.sdk.api.INasInvokeConnector
 import im.yixin.nas.sdk.api.IYXNasApi
 import im.yixin.nas.sdk.core.NasFlutterBridgeStore
-import im.yixin.nas.sdk.event.BasicNasEvent
-import im.yixin.nas.sdk.event.callback.VoidResult
-import im.yixin.nas.sdk.event.convert.EventBundle
-import im.yixin.nas.sdk.event.convert.InitEventBundle
-import im.yixin.nas.sdk.fragment.NasFlutterFragment
 import im.yixin.nas.sdk.util.LogUtil
 import im.yixin.nas.sdk.util.ManifestUtil
-import im.yixin.nas.sdk.util.ParseUtil
 import im.yixin.nas.sdk.util.PreConditions
-import io.flutter.embedding.android.FlutterFragment
 import org.jetbrains.annotations.NotNull
-import org.json.JSONObject
 
 /**
  * Created by jixia.cai on 2021/2/19 1:32 PM
@@ -123,94 +115,4 @@ class YXNasSDK private constructor() : IYXNasApi {
     override fun obtainFlutterIntent(): Intent {
         return bridgeStore!!.obtainFlutterIntent()
     }
-}
-
-interface INasInvokeConnector {
-
-    fun onBundleReceived(bundle: NasBundle)
-
-    fun onBridgeConnected(bridge: INasChannelBridge)
-
-    fun onBridgeDisconnected(bridge: INasChannelBridge)
-}
-
-interface INasChannelBridge {
-
-    fun invoke(bundle: NasBundle, callback: INasCallback? = null)
-
-    @Deprecated("")
-    fun broadEvent(event: NasEvent, args: Any?)
-
-    @Deprecated("")
-    fun fireEvent(event: NasEvent, args: Any?, callback: INasCallback? = null)
-}
-
-enum class NasEvent
-
-data class NasBundle(val method: String, val args: Any? = null) {
-
-    fun isVerify(): Boolean = !method?.isNullOrEmpty()
-
-    companion object {
-
-        fun parse(bundle: NasBundle): EventBundle? {
-            when (bundle.method) {
-                NasMethodConst.EVENT_METHOD_SDK_INIT -> return InitEventBundle(
-                    ParseUtil.parseEventResult<VoidResult>(
-                        bundle.args
-                    )
-                )
-            }
-            return null
-        }
-    }
-
-    override fun toString(): String {
-        return Gson().toJson(this)
-    }
-}
-
-object NasMethodConst {
-
-    const val EVENT_NAME_BRIDGE_CONNECT = "connect"
-
-    const val EVENT_NAME_BRIDGE_DISCONNECT = "disconnect"
-
-    const val EVENT_METHOD_SDK_INIT = "sdk_init"
-
-    const val EVENT_METHOD_AUTH = "auth"
-
-    const val EVENT_METHOD_LOGOUT = "logout"
-
-    const val EVENT_METHOD_SWITCH = "switch"
-
-    //其他sdk 交互 event 待补充，如：获取登录态/登录信息等
-}
-
-@Deprecated("")
-object NasCallbackConst {
-
-    const val EVENT_METHOD_SDK_INIT = "callback_sdk_init"
-
-    const val EVENT_CALLBACK_AUTH = "callback_auth"
-
-    const val EVENT_CALLBACK_LOGOUT = "callback_logout"
-
-    const val EVENT_CALLBACK_ACCOUNT_SWITCH = "callback_account_switch"
-}
-
-interface INasCallback {
-
-    fun onSuccess(data: Any? = null) //map或者JSONOject类型
-
-    fun onError(code: Int, message: String?)
-}
-
-object NasResultCode {
-
-    const val CODE_SUCCESS = 200
-
-    const val CODE_BAD_REQUEST = 400 //参数错误
-
-    const val CODE_INTERRUPT = 4001 //调用中断
 }

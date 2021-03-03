@@ -9,14 +9,19 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/NasAppTheme">
+        android:theme="@style/NasAppTheme.NoActionBar">
 
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".activity.DemoHomeActivity"
+            android:theme="@style/NasAppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".activity.TabModeActivity" />
+        <activity android:name=".base.FragmentHostActivity" />
 
         <meta-data
             android:name="nas_sdk_appkey"

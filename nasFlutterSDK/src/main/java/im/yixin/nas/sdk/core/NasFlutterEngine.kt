@@ -44,13 +44,6 @@ class NasFlutterEngine {
         _engineCache.put(NAS_FLUTTER_ENGINE_ID, flutterEngine!!)
     }
 
-    fun share(context: Context): FlutterEngine {
-        if (flutterEngine == null) {
-            preWarm(context)
-        }
-        return flutterEngine!!
-    }
-
     fun recycle() {
         if (!isRecycled) {
             flutterEngine?.destroy()

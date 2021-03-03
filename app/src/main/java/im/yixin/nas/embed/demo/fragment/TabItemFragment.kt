@@ -1,7 +1,6 @@
 package im.yixin.nas.embed.demo.fragment
 
 import android.graphics.Color
-import android.graphics.ColorSpace
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -16,12 +15,12 @@ import im.yixin.nas.embed.demo.R
 /**
  * Created by jixia.cai on 2021/2/19 2:00 PM
  */
-class DemoFragment(private val title: String?) : Fragment(R.layout.nas_demo_fragment) {
+class TabItemFragment(private val title: String?) : Fragment(R.layout.nas_demo_fragment) {
 
     companion object {
 
-        fun createDemo(title: String): DemoFragment {
-            return DemoFragment(title)
+        fun createDemo(title: String): TabItemFragment {
+            return TabItemFragment(title)
         }
     }
 
