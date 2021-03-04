@@ -83,16 +83,6 @@ class YXNasSDK private constructor() : IYXNasApi {
         )
     }
 
-    override fun requestUserInfo(callback: INasInvokeCallback<UserInfo>?) {
-        assertInitInvoke(isInitSuccess, "requestUserInfo")
-        bridgeStore?.requestUserInfo(callback)
-    }
-
-    override fun requestLoginStatus(callback: INasInvokeCallback<Boolean>?) {
-        assertInitInvoke(isInitSuccess, "requestLoginStatus")
-        bridgeStore?.requestLoginStatus(callback)
-    }
-
     override fun authLogin(mobile: String?, token: String?, callback: INasInvokeCallback<Void>?) {
         assertInitInvoke(isInitSuccess, "authLogin")
         bridgeStore?.authLogin(mobile, token, callback)
@@ -168,7 +158,7 @@ class YXNasSDK private constructor() : IYXNasApi {
         return bridgeStore!!.obtainFlutterIntent()
     }
 
-    fun getMockApi(): INasMockApi {
+    fun getTestApi(): INasTestApi {
         assertInitInvoke(isInitSuccess, "getMockApi")
         return bridgeStore!!
     }
@@ -191,7 +181,11 @@ class WrapperListener<T>(
 
 typealias InitSuccessCallback = () -> Unit
 
-interface INasMockApi {
+interface INasTestApi {
 
     fun mockToken(mobile: String?, callback: INasInvokeCallback<UserToken>?)
+
+    fun requestUserInfo(callback: INasInvokeCallback<UserInfo>?)
+
+    fun requestLoginStatus(callback: INasInvokeCallback<Boolean>?)
 }

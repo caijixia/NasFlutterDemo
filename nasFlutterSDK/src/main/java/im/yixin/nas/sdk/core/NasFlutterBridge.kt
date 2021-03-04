@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.fragment.app.Fragment
-import im.yixin.nas.sdk.INasMockApi
+import im.yixin.nas.sdk.INasTestApi
 import im.yixin.nas.sdk.activity.NasFlutterActivity
 import im.yixin.nas.sdk.api.*
 import im.yixin.nas.sdk.const.YXNasConstants
@@ -159,6 +159,7 @@ class NasFlutterBridge : INasChannelBridge {
     }
 
     override fun <T> invoke(request: BaseNasRequest, callback: INasInvokeCallback<T>?) {
+        LogUtil.i(YXNasConstants.TAG, "invoke flutter ${YXNasConstants.toJson(request)}")
         callFlutter(request, callback)
     }
 
@@ -202,7 +203,7 @@ class NasFlutterBridge : INasChannelBridge {
 }
 
 class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBridge>,
-    IProvider, INasMockApi, IYXNasApi {
+    IProvider, INasTestApi, IYXNasApi {
 
     lateinit var _engine: NasFlutterEngine
 

@@ -57,7 +57,7 @@ class NasDemoApp : Application() {
                         )
                     } else {
                         val mobile = userInfo.mobile
-                        YXNasSDK.instance.getMockApi()
+                        YXNasSDK.instance.getTestApi()
                             .mockToken(mobile, object : INasInvokeCallback<UserToken> {
                                 override fun onResult(
                                     code: Int,

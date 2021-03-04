@@ -34,6 +34,8 @@ class UserLoginFragment : Fragment(R.layout.nas_demo_fragment_auth) {
         val current = NasInvocationProxy.instance.getCurrentUserInfo()
         if (current != null) {
             et_mobile.setText(current.mobile)
+            et_mobile.requestFocus()
+            et_mobile.setSelection(current.mobile.length)
         }
 
         btn_auth.setOnClickListener {
@@ -47,7 +49,8 @@ class UserLoginFragment : Fragment(R.layout.nas_demo_fragment_auth) {
                 return@setOnClickListener
             }
             showLoading()
-            YXNasSDK.instance.getMockApi()
+            //1.先获取token信息
+            YXNasSDK.instance.getTestApi()
                 .mockToken(mobile, object : INasInvokeCallback<UserToken> {
                     override fun onResult(code: Int, message: String?, data: UserToken?) {
                         Log.i(
@@ -66,6 +69,8 @@ class UserLoginFragment : Fragment(R.layout.nas_demo_fragment_auth) {
                             //刷新页面到登录state
                             NasInvocationProxy.instance.notifyUserAction(UserAction.authSuccess)
                             hideLoading()
+
+                            //2.执行flutter-auth登录
                             startAuthLogin(mobile, data?.accessToken)
                         } else {
                             hideLoading()
@@ -99,7 +104,7 @@ class UserLoginFragment : Fragment(R.layout.nas_demo_fragment_auth) {
     }
 
     private fun verifyMobile(mobile: String?): Boolean {
-        val pattern = Pattern.compile("^1[3|4|5|6F|7|8][0-9]\\d{8}$")
+        val pattern = Pattern.compile("^1[0-9]\\d{9}$")
         return pattern.matcher(mobile).matches()
     }
 

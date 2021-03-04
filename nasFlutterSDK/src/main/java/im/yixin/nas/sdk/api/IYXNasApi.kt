@@ -19,10 +19,6 @@ interface IYXNasApi {
 
     fun setTokenRequestListener(listener: ITokenRequestListener?)
 
-    fun requestUserInfo(callback: INasInvokeCallback<UserInfo>?)
-
-    fun requestLoginStatus(callback: INasInvokeCallback<Boolean>?)
-
     fun authLogin(mobile: String?, token: String?, callback: INasInvokeCallback<Void>?)
 
     fun logout(callback: INasInvokeCallback<Void>?)

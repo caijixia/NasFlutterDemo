@@ -6,16 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import im.yixin.nas.embed.demo.NasDemoApp
 import im.yixin.nas.embed.demo.R
 import im.yixin.nas.embed.demo.impl.NasInvocationProxy
 import im.yixin.nas.embed.demo.impl.OnNasSDKnitListener
 import im.yixin.nas.embed.demo.impl.OnNasUserListener
-import im.yixin.nas.sdk.YXNasSDK
 import im.yixin.nas.sdk.api.INasInvokeCallback
-import im.yixin.nas.sdk.const.YXNasConstants
 
 /**
  * Created by jixia.cai on 2021/3/1 8:17 PM
@@ -75,25 +72,34 @@ class EmptyFragment(private var title: String? = null, private var message: Stri
             updateStatus(false)
         } else {
             updateStatus(true)
-            //增加flutter判断逻辑
+            //增加flutter判断逻辑, 直接auth登录
             if (current.isLogin == true && current.token != null) {
-                YXNasSDK.instance.requestLoginStatus(object : INasInvokeCallback<Boolean> {
-                    override fun onResult(code: Int, message: String?, data: Boolean?) {
-                        Log.i(
-                            NasDemoApp.TAG,
-                            "login-status with code: $code, message: $message, data: $data ~"
-                        )
-                        if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
-                            if (data is Boolean && data == false) {
-                                NasInvocationProxy.instance.execUserLogin(
-                                    current.mobile,
-                                    current.token!!.accessToken
-                                )
-                            }
+//                YXNasSDK.instance.requestLoginStatus(object : INasInvokeCallback<Boolean> {
+//                    override fun onResult(code: Int, message: String?, data: Boolean?) {
+//                        Log.i(
+//                            NasDemoApp.TAG,
+//                            "login-status with code: $code, message: $message, data: $data ~"
+//                        )
+//                        if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
+//                            if (data is Boolean && data == false) {
+//                                NasInvocationProxy.instance.execUserLogin(
+//                                    current.mobile,
+//                                    current.token!!.accessToken
+//                                )
+//                            }
+//                        }
+//                    }
+//
+//                })
+                NasInvocationProxy.instance.execUserLogin(
+                    current.mobile,
+                    current.token!!.accessToken,
+                    object : INasInvokeCallback<Void> {
+                        override fun onResult(code: Int, message: String?, data: Void?) {
+                            Log.i(NasDemoApp.TAG, "nas-sdk init auth result code: $code, message: $message ~")
                         }
                     }
-
-                })
+                )
             }
         }
     }

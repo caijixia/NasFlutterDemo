@@ -10,10 +10,10 @@
         <option name="gradleJvm" value="1.8" />
         <option name="modules">
           <set>
+            <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/git/flutter_file_picker-40650ae630cb25403d5bcd2ffd56740ab7deffec/android" />
             <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/connectivity-2.0.2/android" />
             <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/device_info-0.4.2+10/android" />
             <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/fijkplayer-0.8.7/android" />
-            <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/file_picker-2.1.6/android" />
             <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/firebase_analytics-6.3.0/android" />
             <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/firebase_core-0.5.3/android" />
             <option value="$USER_HOME$/Desktop/tools/flutter/v1.22.4-stable/.pub-cache/hosted/pub.flutter-io.cn/firebase_crashlytics-0.2.4/android" />

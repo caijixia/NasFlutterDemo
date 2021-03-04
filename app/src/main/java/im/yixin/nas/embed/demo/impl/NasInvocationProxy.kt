@@ -92,9 +92,9 @@ class NasInvocationProxy {
         YXNasSDK.instance.authLogin(mobile, token, object : INasInvokeCallback<Void> {
             override fun onResult(code: Int, message: String?, data: Void?) {
                 callback?.onResult(code, message, data)
-                if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
-                    notifyUserAction(UserAction.authSuccess)
-                }
+//                if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
+//                    notifyUserAction(UserAction.authSuccess)
+//                }
             }
         })
     }
@@ -103,9 +103,9 @@ class NasInvocationProxy {
         YXNasSDK.instance.logout(object : INasInvokeCallback<Void> {
             override fun onResult(code: Int, message: String?, data: Void?) {
                 callback?.onResult(code, message, data)
-                if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
-                    notifyUserAction(UserAction.logoutSuccess)
-                }
+//                if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
+//                    notifyUserAction(UserAction.logoutSuccess)
+//                }
             }
 
         })

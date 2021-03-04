@@ -38,7 +38,7 @@ class UserInfoFragment : Fragment(R.layout.nas_demo_fragment_user_info) {
         val btn_quit = view.findViewById<View>(R.id.btn_quit)
         btn_use_info.setOnClickListener {
             showLoading()
-            YXNasSDK.instance.requestUserInfo(object : INasInvokeCallback<UserInfo> {
+            YXNasSDK.instance.getTestApi().requestUserInfo(object : INasInvokeCallback<UserInfo> {
 
                 override fun onResult(code: Int, message: String?, data: UserInfo?) {
                     Log.i(
@@ -60,7 +60,7 @@ class UserInfoFragment : Fragment(R.layout.nas_demo_fragment_user_info) {
 
         btn_login_status.setOnClickListener {
             showLoading()
-            YXNasSDK.instance.requestLoginStatus(object : INasInvokeCallback<Boolean> {
+            YXNasSDK.instance.getTestApi().requestLoginStatus(object : INasInvokeCallback<Boolean> {
 
                 override fun onResult(code: Int, message: String?, data: Boolean?) {
                     Log.i(
