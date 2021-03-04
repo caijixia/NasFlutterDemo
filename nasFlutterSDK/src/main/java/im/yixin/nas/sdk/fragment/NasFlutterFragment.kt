@@ -1,5 +1,6 @@
 package im.yixin.nas.sdk.fragment
 
+import im.yixin.nas.sdk.core.NasFlutterEngine
 import im.yixin.nas.sdk.plugin.NasBridgePlugin
 import io.flutter.embedding.android.FlutterFragment
 import io.flutter.embedding.engine.FlutterEngine
@@ -13,12 +14,16 @@ class NasFlutterFragment : FlutterFragment() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         GeneratedPluginRegister.registerGeneratedPlugins(flutterEngine)
-        flutterEngine.plugins.add(NasBridgePlugin())
+        if (flutterEngine !is NasFlutterEngine) {
+            flutterEngine.plugins.add(NasBridgePlugin())
+        }
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
         super.cleanUpFlutterEngine(flutterEngine)
-        flutterEngine.plugins.remove(NasBridgePlugin::class.java)
+        if (flutterEngine !is NasFlutterEngine) {
+            flutterEngine.plugins.remove(NasBridgePlugin::class.java)
+        }
     }
 }
 

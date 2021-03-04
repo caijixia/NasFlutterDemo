@@ -7,17 +7,18 @@ import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.embedding.engine.plugins.util.GeneratedPluginRegister
 import org.jetbrains.annotations.NotNull
 
 /**
  * Created by jixia.cai on 2021/2/20 10:02 AM
  */
-class NasFlutterEngine {
+class NasFlutterEngineProxy {
 
     companion object {
 
         private val NAS_FLUTTER_ENGINE_ID =
-            NasFlutterEngine::class.java.canonicalName + "_" + RandomUtil.nextString()
+            NasFlutterEngineProxy::class.java.canonicalName + "_" + RandomUtil.nextString()
 
         const val NAS_FLUTTER_INIT_ROUTE_DEFAULT = "/"
 
@@ -35,14 +36,21 @@ class NasFlutterEngine {
         dartVmArgs: Array<String>? = null,
         automaticallyRegisterPlugins: Boolean? = true
     ) {
-        flutterEngine = FlutterEngine(context, dartVmArgs, automaticallyRegisterPlugins ?: true)
+        flutterEngine = NasFlutterEngine(context, dartVmArgs, automaticallyRegisterPlugins ?: true)
         flutterEngine!!.navigationChannel.setInitialRoute(NAS_FLUTTER_INIT_ROUTE_DEFAULT)
+        //预加载插件
+        preloadPlugins(flutterEngine!!)
         flutterEngine!!.dartExecutor.executeDartEntrypoint(
             createEntryPoint(
                 NAS_FLUTTER_ENTRY_POINT_DEFAULT
             )
         )
         FlutterEngineCache.getInstance().put(engineId, flutterEngine)
+    }
+
+    private fun preloadPlugins(engine: FlutterEngine) {
+        GeneratedPluginRegister.registerGeneratedPlugins(engine)
+        engine.plugins.add(NasBridgePlugin())
     }
 
     @Deprecated("")
@@ -63,3 +71,9 @@ class NasFlutterEngine {
     val engineId: String
         get() = NAS_FLUTTER_ENGINE_ID
 }
+
+class NasFlutterEngine(
+    context: Context,
+    dartVmArgs: Array<out String>?,
+    automaticallyRegisterPlugins: Boolean?
+) : FlutterEngine(context, dartVmArgs, automaticallyRegisterPlugins ?: true)

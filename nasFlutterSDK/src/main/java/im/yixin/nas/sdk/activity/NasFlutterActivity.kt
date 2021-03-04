@@ -1,5 +1,6 @@
 package im.yixin.nas.sdk.activity
 
+import im.yixin.nas.sdk.core.NasFlutterEngine
 import im.yixin.nas.sdk.plugin.NasBridgePlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -11,11 +12,15 @@ class NasFlutterActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        flutterEngine.plugins.add(NasBridgePlugin())
+        if (flutterEngine !is NasFlutterEngine) {
+            flutterEngine.plugins.add(NasBridgePlugin())
+        }
     }
 
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
         super.cleanUpFlutterEngine(flutterEngine)
-        flutterEngine.plugins.remove(NasBridgePlugin::class.java)
+        if (flutterEngine !is NasFlutterEngine) {
+            flutterEngine.plugins.remove(NasBridgePlugin::class.java)
+        }
     }
 }

@@ -98,12 +98,12 @@ class YXNasSDK private constructor() : IYXNasApi {
     lateinit var context: Context
 
     var isInitialized = false
-    var useCacheEngine = false // 缓存flutter-engine
+    var useCacheEngine = true // 使用缓存flutter-engine
     var bridgeStore: NasFlutterBridgeStore? = null
 
     var isInitSuccess = false
 
-    private val mLogger = LogUtil.getLogger("YXNasSDK")
+    private val mLogger = LogUtil.getLogger(YXNasConstants.TAG)
 
     private fun _init(
         context: Context,

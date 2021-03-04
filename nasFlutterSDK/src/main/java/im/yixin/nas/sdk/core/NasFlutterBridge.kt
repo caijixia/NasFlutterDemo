@@ -205,7 +205,7 @@ class NasFlutterBridge : INasChannelBridge {
 class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBridge>,
     IProvider, INasTestApi, IYXNasApi {
 
-    lateinit var _engine: NasFlutterEngine
+    private lateinit var _engineProxy: NasFlutterEngineProxy
 
     lateinit var context: Context
 
@@ -266,7 +266,7 @@ class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBri
         this.appsecret = appsecret
         this.useCacheEngine = useCacheEngine
         if (useCacheEngine) {
-            _engine = NasFlutterEngine().also {
+            _engineProxy = NasFlutterEngineProxy().also {
                 it.preWarm(context)
             }
         }
@@ -288,7 +288,7 @@ class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBri
 
     override fun obtainFlutterHost(): Fragment {
         return if (useCacheEngine) {
-            NasFlutterFragmentBuilder(_engine.engineId).build()
+            NasFlutterFragmentBuilder(_engineProxy.engineId).build()
         } else {
             FlutterFragment.NewEngineFragmentBuilder(NasFlutterFragment::class.java).build()
         }
@@ -298,7 +298,7 @@ class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBri
         return if (useCacheEngine) {
             FlutterActivity.CachedEngineIntentBuilder(
                 NasFlutterActivity::class.java,
-                _engine.engineId
+                _engineProxy.engineId
             ).build(context)
         } else {
             FlutterActivity.NewEngineIntentBuilder(NasFlutterActivity::class.java).build(context)
