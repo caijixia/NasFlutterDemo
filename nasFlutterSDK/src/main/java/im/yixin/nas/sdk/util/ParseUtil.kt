@@ -2,6 +2,7 @@ package im.yixin.nas.sdk.util
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import im.yixin.nas.sdk.event.base.VoidResult
 import org.json.JSONObject
 
@@ -15,12 +16,13 @@ object ParseUtil {
     inline fun <reified T> parseObject(arguments: Any?): T? {
         try {
             if (arguments == null) return null
+            val type = object: TypeToken<T>(){}.type
             if (arguments is Map<*, *>) {
-                return sGson.fromJson(sGson.toJson(arguments), T::class.java)
+                return sGson.fromJson(sGson.toJson(arguments), type)
             } else if (arguments is JSONObject) {
-                return sGson.fromJson(arguments.toString(), T::class.java)
+                return sGson.fromJson(arguments.toString(), type)
             } else if (arguments is String) {
-                return sGson.fromJson(arguments, T::class.java)
+                return sGson.fromJson(arguments, type)
             }
         } catch (ex: Exception) {
             ex.printStackTrace()

@@ -29,8 +29,7 @@ class SDKInitEvent {
 
     private class RequestBuilder(var appkey: String, var appsecret: String) : IRequestEntrySet {
         override fun toJSON(): JSONObject? {
-            val map = mapOf("appkey" to appkey, "appsecret" to appsecret)
-            return JSONObject(map)
+            return JSONObject(mapOf("appkey" to appkey, "appsecret" to appsecret))
         }
     }
 

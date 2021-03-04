@@ -1,11 +1,12 @@
 package im.yixin.nas.sdk.event.base
 
 import im.yixin.nas.sdk.const.YXNasConstants
+import org.json.JSONObject
 
 /**
  * Created by jixia.cai on 2021/2/25 11:28 AM
  */
-open class Result<T> {
+open class Result<T> : IRequestEntrySet {
 
     var code: Int = YXNasConstants.ResultCode.CODE_SUCCESS
     var message: String? = null
@@ -15,7 +16,7 @@ open class Result<T> {
 
     companion object {
 
-        fun <T> build(code: Int, message: String?, data: T?): Result<T> {
+        fun <T> build(code: Int, message: String?, data: T? = null): Result<T> {
             return Result<T>().also {
                 it.code = code
                 it.message = message
@@ -46,6 +47,15 @@ open class Result<T> {
             return true
         }
     }
+
+    override fun toJSON(): JSONObject? {
+        return JSONObject().also {
+            it.put("code", code)
+            it.put("message", message)
+            it.put("data", data)
+        }
+    }
+
 }
 
 class VoidResult : Result<Void> {

@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="im.yixin.nas.sdk">
 
-    <application />
+    <application>
+        <activity android:name="im.yixin.nas.sdk.activity.NasFlutterActivity" />
+        <activity android:name="io.flutter.embedding.android.FlutterActivity" />
+    </application>
 </manifest>

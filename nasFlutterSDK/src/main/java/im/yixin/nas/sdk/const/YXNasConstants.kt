@@ -7,7 +7,9 @@ import com.google.gson.GsonBuilder
  */
 object YXNasConstants {
 
-    val sGson = GsonBuilder().create()
+    private val sGson = GsonBuilder().create()
+
+    val TAG = "NasFlutter::SDK"
 
     object Method {
 
@@ -16,6 +18,8 @@ object YXNasConstants {
         const val EVENT_METHOD_AUTH = "auth"
 
         const val EVENT_METHOD_LOGOUT = "logout"
+
+        const val EVENT_METHOD_TOKEN_REQUEST = "request_token" //刷新token
 
         const val EVENT_METHOD_SWITCH = "switch" //暂时不用
 
@@ -29,7 +33,7 @@ object YXNasConstants {
         //内部事件
         const val EVENT_METHOD_INNER_CONNECT = "bridge_connect"
 
-        const val EVENT_NAME_BRIDGE_DISCONNECT = "bridge_disconnect"
+        const val EVENT_NAME_BRIDGE_DISCONNECT = "bridge_disconnect" //暂时不用
     }
 
     //统一错误码
@@ -42,6 +46,10 @@ object YXNasConstants {
         const val CODE_INTERRUPT = 4001 //调用中断
 
         const val CODE_RESULT_PARSE_ERROR = 4002 //返回result数据解析异常
+
+        const val CODE_REFRESH_TOKEN_ERROR = 4003 //刷新token失败， 用户数据为空或未登录
+
+        const val CODE_MOCK_TOKEN_ERROR = 4004 //获取token失败
     }
 
     fun compose(tag: String?): String {

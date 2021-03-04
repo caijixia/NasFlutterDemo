@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import im.yixin.nas.embed.demo.NasDemoApp
 import im.yixin.nas.embed.demo.R
 import im.yixin.nas.embed.demo.base.FragmentHostActivity
 import im.yixin.nas.embed.demo.fragment.UserInfoFragment
@@ -29,7 +28,7 @@ class DemoHomeActivity : AppCompatActivity() {
             startActivity(Intent(DemoHomeActivity@ this, TabModeActivity::class.java))
         }
         btn_entry_mode.setOnClickListener {
-            startActivity(NasDemoApp.nasProxy?.obtainFlutterIntent())
+            startActivity(YXNasSDK.instance.obtainFlutterIntent())
         }
         btn_user_react.setOnClickListener {
             startActivity(Intent(DemoHomeActivity@ this, FragmentHostActivity::class.java).apply {

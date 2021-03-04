@@ -36,23 +36,19 @@ class TabItemFragment(private val title: String?) : Fragment(R.layout.nas_demo_f
         return view
     }
 
-    fun initViews(view: View) {
+    private fun initViews(view: View) {
         val tv_content = view.findViewById<TextView>(R.id.tv_content)
         tv_content.text = aheadTitle()
     }
 
-    fun aheadTitle(): CharSequence {
-        val builder = SpannableStringBuilder("$title，敬请期待～")
+    private fun aheadTitle(): CharSequence {
+        val builder = SpannableStringBuilder("$title")
         builder.setSpan(
-            ForegroundColorSpan(Color.RED),
+            ForegroundColorSpan(Color.BLACK),
             0,
             title?.length ?: 0,
             Spannable.SPAN_INCLUSIVE_EXCLUSIVE
         )
         return builder
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
     }
 }

@@ -1,14 +1,20 @@
 package im.yixin.nas.embed.demo.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.kaopiz.kprogresshud.KProgressHUD
+import im.yixin.nas.embed.demo.NasDemoApp
 import im.yixin.nas.embed.demo.R
-import im.yixin.nas.embed.demo.impl.NasBridgeManager
+import im.yixin.nas.embed.demo.impl.DemoUserInfo
+import im.yixin.nas.embed.demo.impl.NasInvocationProxy
+import im.yixin.nas.embed.demo.impl.UserAction
 import im.yixin.nas.embed.demo.util.ToastUtil
-import im.yixin.nas.sdk.api.INasCallback
+import im.yixin.nas.sdk.YXNasSDK
+import im.yixin.nas.sdk.api.INasInvokeCallback
+import im.yixin.nas.sdk.const.YXNasConstants
 import im.yixin.nas.sdk.entity.UserToken
 import java.util.regex.Pattern
 
@@ -25,6 +31,10 @@ class UserLoginFragment : Fragment(R.layout.nas_demo_fragment_auth) {
     private fun findViews(view: View) {
         val et_mobile = view.findViewById<EditText>(R.id.et_mobile)
         val btn_auth = view.findViewById<View>(R.id.btn_auth)
+        val current = NasInvocationProxy.instance.getCurrentUserInfo()
+        if (current != null) {
+            et_mobile.setText(current.mobile)
+        }
 
         btn_auth.setOnClickListener {
             val mobile = et_mobile.text?.toString()
@@ -37,39 +47,59 @@ class UserLoginFragment : Fragment(R.layout.nas_demo_fragment_auth) {
                 return@setOnClickListener
             }
             showLoading()
-            NasBridgeManager.instance.execTokenMock(mobile, object : INasCallback {
-                override fun onSuccess(data: Any?) {
-                    if (data is UserToken) {
-                        //执行登录
-                        startAuthLogin(data.accessToken, mobile)
+            YXNasSDK.instance.getMockApi()
+                .mockToken(mobile, object : INasInvokeCallback<UserToken> {
+                    override fun onResult(code: Int, message: String?, data: UserToken?) {
+                        Log.i(
+                            NasDemoApp.TAG,
+                            "mock token code: $code, message: $message, data: $data ~"
+                        )
+                        if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
+                            //保存本地数据
+                            NasInvocationProxy.instance.updateUserInfo(
+                                DemoUserInfo(
+                                    mobile,
+                                    true,
+                                    data
+                                )
+                            )
+                            //刷新页面到登录state
+                            NasInvocationProxy.instance.notifyUserAction(UserAction.authSuccess)
+                            hideLoading()
+                            startAuthLogin(mobile, data?.accessToken)
+                        } else {
+                            hideLoading()
+                            ToastUtil.showToast(
+                                context!!,
+                                "获取token失败 >> code: $code, message: $message"
+                            )
+                        }
                     }
-                }
-
-                override fun onError(code: Int, message: String?) {
-                    ToastUtil.showToast(context!!, message)
-                    hideLoading()
-                }
-            })
+                })
         }
     }
 
     private fun startAuthLogin(mobile: String?, token: String?) {
-        NasBridgeManager.instance.execAuthLogin(mobile, token, object : INasCallback {
-            override fun onSuccess(data: Any?) {
-                ToastUtil.showToast(context!!, "授权登录成功 ~")
-                hideLoading()
-            }
+        NasInvocationProxy.instance.execUserLogin(mobile, token, object : INasInvokeCallback<Void> {
 
-            override fun onError(code: Int, message: String?) {
-                ToastUtil.showToast(context!!, "授权登录失败 ~")
+            override fun onResult(code: Int, message: String?, data: Void?) {
+                Log.i(NasDemoApp.TAG, "auth result code: $code, message: $message ~")
                 hideLoading()
+                if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
+                    ToastUtil.showToast(context ?: NasDemoApp.sContext, "授权登录成功 ~")
+                } else {
+                    ToastUtil.showToast(
+                        context ?: NasDemoApp.sContext,
+                        "授权登录失败 >> code: $code, message: $message ~"
+                    )
+                }
             }
 
         })
     }
 
     private fun verifyMobile(mobile: String?): Boolean {
-        val pattern = Pattern.compile("^1[3|4|5|6|7|8][0-9]\\d{8}$")
+        val pattern = Pattern.compile("^1[3|4|5|6F|7|8][0-9]\\d{8}$")
         return pattern.matcher(mobile).matches()
     }
 

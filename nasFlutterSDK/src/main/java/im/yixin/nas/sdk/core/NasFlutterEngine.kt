@@ -1,6 +1,7 @@
 package im.yixin.nas.sdk.core
 
 import android.content.Context
+import im.yixin.nas.sdk.plugin.NasBridgePlugin
 import im.yixin.nas.sdk.util.RandomUtil
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
@@ -41,9 +42,10 @@ class NasFlutterEngine {
                 NAS_FLUTTER_ENTRY_POINT_DEFAULT
             )
         )
-        _engineCache.put(NAS_FLUTTER_ENGINE_ID, flutterEngine!!)
+        FlutterEngineCache.getInstance().put(engineId, flutterEngine)
     }
 
+    @Deprecated("")
     fun recycle() {
         if (!isRecycled) {
             flutterEngine?.destroy()

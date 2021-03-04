@@ -9,7 +9,10 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:background="?attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="用户信息"
+        app:titleTextAppearance="@style/yx_nas_titlebar_text_style" />
 
     <ScrollView
         android:layout_width="match_parent"

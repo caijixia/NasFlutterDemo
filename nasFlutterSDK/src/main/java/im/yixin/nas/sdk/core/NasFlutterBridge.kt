@@ -5,17 +5,15 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.fragment.app.Fragment
+import im.yixin.nas.sdk.INasMockApi
 import im.yixin.nas.sdk.activity.NasFlutterActivity
-import im.yixin.nas.sdk.api.INasCallback
-import im.yixin.nas.sdk.api.INasChannelBridge
-import im.yixin.nas.sdk.api.INasInvokeConnector
-import im.yixin.nas.sdk.api.IYXNasApi
+import im.yixin.nas.sdk.api.*
 import im.yixin.nas.sdk.const.YXNasConstants
-import im.yixin.nas.sdk.event.SDKInitEvent
-import im.yixin.nas.sdk.event.base.BaseNasRequest
-import im.yixin.nas.sdk.event.base.BaseNasResponse
-import im.yixin.nas.sdk.event.base.NasResponse
-import im.yixin.nas.sdk.event.base.Result
+import im.yixin.nas.sdk.entity.UserInfo
+import im.yixin.nas.sdk.entity.UserToken
+import im.yixin.nas.sdk.event.*
+import im.yixin.nas.sdk.event.base.*
+import im.yixin.nas.sdk.fragment.NasFlutterFragment
 import im.yixin.nas.sdk.fragment.NasFlutterFragmentBuilder
 import im.yixin.nas.sdk.util.LogUtil
 import io.flutter.embedding.android.FlutterActivity
@@ -46,9 +44,9 @@ class NasFlutterBridge : INasChannelBridge {
 
     private val TAG: String = NasFlutterBridge::class.java.simpleName
 
-    private val _logger = LogUtil.getLogger(YXNasConstants.compose(TAG))
+    private val _logger = LogUtil.getLogger(YXNasConstants.TAG)
 
-    private val _listeners = mutableMapOf<String, NasFlutterCallbackListener>()
+    private val _listeners = mutableMapOf<String, NasFlutterCallbackListener<*>>()
 
     private val mMainHandler = Handler(Looper.getMainLooper())
 
@@ -64,25 +62,45 @@ class NasFlutterBridge : INasChannelBridge {
         this.sink = sink
     }
 
+    private fun <T> notifyFlutterRequest(request: NasRequest, methodCall: IMethodCall<T>) {
+        runInMainThread {
+            connector?.onRequest(request, methodCall)
+        }
+    }
+
     fun handleMethodCall(call: MethodCall?, result: MethodChannel.Result?) {
+        _logger.i("receive flutter-call with: ${YXNasConstants.toJson(call)}")
         if (call == null) return
         val response = BaseNasResponse.parse(NasResponse(call.method, call.arguments))
+        _logger.i("parse flutter response: ${YXNasConstants.toJson(response)}")
         if (response is SDKInitEvent.Response) {
             val listener = removeCallBackListener(response.method!!)
             if (listener != null) {
-                notifyNasInvokeResult(response.result, listener.callback)
+                notifyNasInvokeResult(
+                    response.result,
+                    listener.callback as INasInvokeCallback<Void>
+                )
             }
             //通知flutter 调用成功
             notifyFlutter(
                 result,
                 FlutterCallbackResult()
             )
+        }
+        //判断request_token类型
+        else if (response is TokenRequestEvent.Request) {
+            val request = NasRequest(response.method!!)
+            val methodCall = FlutterMethodCall<UserToken>(result)
+            notifyFlutterRequest(request, methodCall)
         } else {
             val method: String? = call.method
             if (method != null) {
                 val listener = removeCallBackListener(call.method)
                 if (listener != null) {
-                    notifyNasInvokeResult(response.result, listener.callback)
+                    notifyNasInvokeResult(
+                        response.result as Result<Any>?,
+                        listener.callback as INasInvokeCallback<Any>?
+                    )
                 }
                 //通知flutter 调用成功
                 notifyFlutter(
@@ -96,34 +114,30 @@ class NasFlutterBridge : INasChannelBridge {
     }
 
     private fun notifyFlutter(result: MethodChannel.Result?, content: FlutterCallbackResult) {
-        result?.success(content.toJSON())
+        result?.success(content.toJSON().toString())
     }
 
     fun startConnect() {
         notifyConnect()
         //初始化event特殊处理，通过 onResponse 方法回调
-        callFlutter(buildInitRequest(), object : INasCallback {
+        callFlutter(buildInitRequest(), object : INasInvokeCallback<Void> {
 
-            override fun onSuccess(data: Any?) {
-                notifyNasResult(SDKInitEvent.Response.buildSuccess().bundle)
-            }
-
-            override fun onError(code: Int, message: String?) {
+            override fun onResult(code: Int, message: String?, data: Void?) {
                 notifyNasResult(SDKInitEvent.Response.build(code, message).bundle)
             }
         })
     }
 
     //通过eventChannel调用flutter
-    private fun callFlutter(request: BaseNasRequest, callback: INasCallback?) {
+    private fun <T> callFlutter(request: BaseNasRequest, callback: INasInvokeCallback<T>?) {
         //检查request类型&参数，非法则直接回调
         val checkRet = request.preCheck()
         if (checkRet != null && !checkRet.success) {
-            callback?.onError(YXNasConstants.ResultCode.CODE_BAD_REQUEST, checkRet.message)
+            callback?.onResult(YXNasConstants.ResultCode.CODE_BAD_REQUEST, checkRet.message, null)
             return
         }
         addCallbackListener(request.method, callback) //添加回调监听器
-        sink?.success(request.toJSON()) //执行flutter调用，统一转换成JSONObject
+        sink?.success(request.toJSON().toString()) //执行flutter调用，统一转换成json
     }
 
     private fun buildInitRequest(): SDKInitEvent.Request {
@@ -144,11 +158,11 @@ class NasFlutterBridge : INasChannelBridge {
         }
     }
 
-    override fun invoke(request: BaseNasRequest, callback: INasCallback?) {
+    override fun <T> invoke(request: BaseNasRequest, callback: INasInvokeCallback<T>?) {
         callFlutter(request, callback)
     }
 
-    private fun addCallbackListener(method: String, callback: INasCallback?) {
+    private fun <T> addCallbackListener(method: String, callback: INasInvokeCallback<T>?) {
         if (callback == null) return
         if (_listeners.containsKey(method)) {
             _listeners.remove(method)
@@ -156,19 +170,18 @@ class NasFlutterBridge : INasChannelBridge {
         _listeners[method] = NasFlutterCallbackListener.newBuilder(callback)
     }
 
-    private fun removeCallBackListener(method: String): NasFlutterCallbackListener? {
+    private fun removeCallBackListener(method: String): NasFlutterCallbackListener<*>? {
         return _listeners.remove(method)
     }
 
-    private fun notifyNasInvokeResult(result: Result<*>?, callback: INasCallback?) {
+    private fun <T : Any> notifyNasInvokeResult(
+        result: Result<T>?,
+        callback: INasInvokeCallback<T>?
+    ) {
         if (callback == null || result == null) return
         //主线程回调
         runInMainThread {
-            if (result.success()) {
-                callback.onSuccess(result.data)
-            } else {
-                callback.onError(result.code, result.message)
-            }
+            callback.onResult(result.code, result.message, result.data)
         }
     }
 
@@ -189,7 +202,7 @@ class NasFlutterBridge : INasChannelBridge {
 }
 
 class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBridge>,
-    IProvider, IYXNasApi {
+    IProvider, INasMockApi, IYXNasApi {
 
     lateinit var _engine: NasFlutterEngine
 
@@ -201,7 +214,40 @@ class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBri
 
     private var useCacheEngine: Boolean = true
 
-    var connector: INasInvokeConnector? = null
+    private var _initCallback: INasInvokeCallback<Void>? = null
+
+    private var _tokenRequestListener: ITokenRequestListener? = null
+
+    private var bridge: INasChannelBridge? = null
+
+    private var _connector = object : INasInvokeConnector {
+        override fun onResponse(response: NasResponse) {
+            val result = response.result
+            when (response.method) {
+                YXNasConstants.Method.EVENT_METHOD_SDK_INIT -> {
+                    if (result is Result<*>) {
+                        _initCallback?.onResult(result.code, result.message, result.data as Void?)
+                    }
+                }
+            }
+        }
+
+        override fun onRequest(request: NasRequest, methodCall: IMethodCall<*>?) {
+            when (request.method) {
+                YXNasConstants.Method.EVENT_METHOD_TOKEN_REQUEST -> {
+                    _tokenRequestListener?.onTokenRequest(methodCall as IMethodCall<UserToken>)
+                }
+            }
+        }
+
+        override fun onBridgeConnected(bridge: INasChannelBridge) {
+            this@NasFlutterBridgeStore.bridge = bridge
+        }
+
+        override fun onBridgeDisconnected(bridge: INasChannelBridge) {
+            this@NasFlutterBridgeStore.bridge = null
+        }
+    }
 
     companion object {
 
@@ -212,13 +258,11 @@ class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBri
         context: Context,
         appkey: String,
         appsecret: String,
-        useCacheEngine: Boolean,
-        connector: INasInvokeConnector?
+        useCacheEngine: Boolean
     ) {
         this.context = context
         this.appkey = appkey
         this.appsecret = appsecret
-        this.connector = connector
         this.useCacheEngine = useCacheEngine
         if (useCacheEngine) {
             _engine = NasFlutterEngine().also {
@@ -235,13 +279,17 @@ class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBri
 
     override fun provideAppConf(): AppConf = AppConf(appkey!!, appsecret!!)
 
-    override fun provideConnector(): INasInvokeConnector? = connector
+    override fun provideConnector(): INasInvokeConnector? = _connector
+
+    override fun mockToken(mobile: String?, callback: INasInvokeCallback<UserToken>?) {
+        bridge?.invoke(MockTokenGetEvent.Request(mobile), callback)
+    }
 
     override fun obtainFlutterHost(): Fragment {
         return if (useCacheEngine) {
             NasFlutterFragmentBuilder(_engine.engineId).build()
         } else {
-            FlutterFragment.withNewEngine().build()
+            FlutterFragment.NewEngineFragmentBuilder(NasFlutterFragment::class.java).build()
         }
     }
 
@@ -252,8 +300,32 @@ class NasFlutterBridgeStore private constructor() : IFactory<Void, NasFlutterBri
                 _engine.engineId
             ).build(context)
         } else {
-            FlutterActivity.withNewEngine().build(context)
+            FlutterActivity.NewEngineIntentBuilder(NasFlutterActivity::class.java).build(context)
         }
+    }
+
+    fun setNasInvokeCallback(callback: INasInvokeCallback<Void>?) {
+        _initCallback = callback
+    }
+
+    override fun setTokenRequestListener(listener: ITokenRequestListener?) {
+        _tokenRequestListener = listener
+    }
+
+    override fun requestUserInfo(callback: INasInvokeCallback<UserInfo>?) {
+        bridge?.invoke(GetUserInfoEvent.Request(), callback = callback)
+    }
+
+    override fun requestLoginStatus(callback: INasInvokeCallback<Boolean>?) {
+        bridge?.invoke(GetUserStatusEvent.Request(), callback)
+    }
+
+    override fun authLogin(mobile: String?, token: String?, callback: INasInvokeCallback<Void>?) {
+        bridge?.invoke(UserAuthEvent.Request(mobile, token), callback)
+    }
+
+    override fun logout(callback: INasInvokeCallback<Void>?) {
+        bridge?.invoke(UserLogoutEvent.Request(), callback)
     }
 }
 
@@ -271,18 +343,18 @@ interface IFactory<T, R> {
     fun produce(param: T? = null): R
 }
 
-class NasFlutterCallbackListener private constructor() {
+class NasFlutterCallbackListener<T> private constructor() {
 
     companion object {
 
-        fun newBuilder(callback: INasCallback?): NasFlutterCallbackListener {
-            return NasFlutterCallbackListener().also {
+        fun <T> newBuilder(callback: INasInvokeCallback<T>?): NasFlutterCallbackListener<T> {
+            return NasFlutterCallbackListener<T>().also {
                 it.callback = callback
             }
         }
     }
 
-    var callback: INasCallback? = null
+    var callback: INasInvokeCallback<T>? = null
         private set
 }
 
@@ -291,7 +363,7 @@ class FlutterCallbackResult {
     var code: Int? = YXNasConstants.ResultCode.CODE_SUCCESS
     var message: String? = null
 
-    constructor(code: Int? = null, message: String? = null) {
+    constructor(code: Int? = YXNasConstants.ResultCode.CODE_SUCCESS, message: String? = null) {
         this.code = code
         this.message = message
     }
@@ -304,4 +376,25 @@ class FlutterCallbackResult {
             it.put("message", message)
         }
     }
+}
+
+class FlutterMethodCall<T> : IMethodCall<T> {
+
+    var _result: MethodChannel.Result? = null
+
+    constructor(result: MethodChannel.Result?) {
+        this._result = result
+    }
+
+    override fun success(result: T?) {
+        val ret = Result.buildSuccess(result.toString()).toJSON().toString()
+        LogUtil.i(YXNasConstants.TAG, "success result: $ret")
+        _result?.success(ret)
+    }
+
+    override fun error(code: Int, message: String?) {
+        val result = Result.build<Void>(code, message)
+        _result?.success(result.toJSON().toString())
+    }
+
 }

@@ -22,14 +22,14 @@ class UserAuthEvent {
     }
 
     class Request(private var mobile: String? = null, private var token: String? = null) :
-        BaseNasRequest(method = method, RequestBuilder(token, mobile)) {
+        BaseNasRequest(method = method, RequestBuilder(mobile, token)) {
 
         override fun preCheck(): IRequestCheck.CheckResult? {
-            if (token.isNullOrEmpty()) {
-                return IRequestCheck.CheckResult(success = false, message = "token参数不能为空")
-            }
             if (StringUtil.checkMobile(mobile).not()) {
                 return IRequestCheck.CheckResult(success = false, message = "mobile参数不合法")
+            }
+            if (token.isNullOrEmpty()) {
+                return IRequestCheck.CheckResult(success = false, message = "token参数不能为空")
             }
             return null
         }

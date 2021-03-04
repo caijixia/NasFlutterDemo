@@ -1,16 +1,15 @@
 package im.yixin.nas.embed.demo
 
 import android.app.Application
-import im.yixin.nas.embed.demo.impl.NasBridgeManager
+import android.content.Context
+import android.util.Log
+import im.yixin.nas.embed.demo.impl.NasInvocationProxy
 import im.yixin.nas.sdk.YXNasSDK
-import im.yixin.nas.sdk.api.INasChannelBridge
-import im.yixin.nas.sdk.api.INasInvokeConnector
-import im.yixin.nas.sdk.api.IYXNasApi
+import im.yixin.nas.sdk.api.IMethodCall
+import im.yixin.nas.sdk.api.INasInvokeCallback
+import im.yixin.nas.sdk.api.ITokenRequestListener
 import im.yixin.nas.sdk.const.YXNasConstants
-import im.yixin.nas.sdk.event.SDKInitEvent
-import im.yixin.nas.sdk.event.base.BaseNasResponse
-import im.yixin.nas.sdk.event.base.NasResponse
-import im.yixin.nas.sdk.util.LogUtil
+import im.yixin.nas.sdk.entity.UserToken
 
 /**
  * Created by jixia.cai on 2021/2/22 5:16 PM
@@ -19,42 +18,73 @@ class NasDemoApp : Application() {
 
     companion object {
 
-        @JvmStatic
-        var nasProxy: IYXNasApi? = null
+        var TAG = "NasFlutter::Demo"
 
-        private var TAG = NasDemoApp::class.java.simpleName
+        lateinit var sContext: Context
     }
-
-    private val _logger = LogUtil.getLogger(TAG)
 
     override fun onCreate() {
         super.onCreate()
-        nasProxy = YXNasSDK.init(this, object : INasInvokeConnector {
+        sContext = this
+        Log.i(TAG, "start init nas-sdk when appstart ~")
+        NasInvocationProxy.instance.init(this@NasDemoApp)
+        YXNasSDK.instance.init(this, object : INasInvokeCallback<Void> {
 
-            var bridge: INasChannelBridge? = null
-
-            override fun onResponse(response: NasResponse) {
-                val response = BaseNasResponse.parse(response)
-                //处理init-event的监听
-                if (response is SDKInitEvent.Response) {
-                    _logger.i("init nas-sdk with result: $response")
-                    NasBridgeManager.instance.notifyInitEventResponse(response) //通知初始化结果
+            override fun onResult(code: Int, message: String?, data: Void?) {
+                Log.i(TAG, "init nas-sdk with code: $code, message: $message ~")
+                NasInvocationProxy.instance.notifySDKInitResult(code, message)
+            }
+        })
+        YXNasSDK.instance.setTokenRequestListener(object : ITokenRequestListener {
+            override fun onTokenRequest(methodCall: IMethodCall<UserToken>?) {
+                Log.i(
+                    TAG,
+                    "response flutter refresh-token ~"
+                )
+                //获取当前用户信息
+                val userInfo = NasInvocationProxy.instance.getCurrentUserInfo()
+                if (userInfo == null) {
+                    methodCall?.error(
+                        YXNasConstants.ResultCode.CODE_REFRESH_TOKEN_ERROR,
+                        "当前用户数据为空"
+                    )
+                } else {
+                    val isLogin = userInfo.isLogin
+                    if (isLogin == null || isLogin == false) {
+                        methodCall?.error(
+                            YXNasConstants.ResultCode.CODE_REFRESH_TOKEN_ERROR,
+                            "当前用户未登录"
+                        )
+                    } else {
+                        val mobile = userInfo.mobile
+                        YXNasSDK.instance.getMockApi()
+                            .mockToken(mobile, object : INasInvokeCallback<UserToken> {
+                                override fun onResult(
+                                    code: Int,
+                                    message: String?,
+                                    data: UserToken?
+                                ) {
+                                    if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
+                                        //刷新本地token
+                                        val current =
+                                            NasInvocationProxy.instance.getCurrentUserInfo()
+                                        NasInvocationProxy.instance.updateUserInfo(
+                                            current?.withToken(
+                                                data
+                                            )
+                                        )
+                                        methodCall?.success(data)
+                                    } else {
+                                        methodCall?.error(
+                                            YXNasConstants.ResultCode.CODE_MOCK_TOKEN_ERROR,
+                                            "刷新token失败: $message"
+                                        )
+                                    }
+                                }
+                            })
+                    }
                 }
-                //处理其他类型的event监听
             }
-
-            override fun onBridgeConnected(bridge: INasChannelBridge) {
-                LogUtil.i(TAG, "nas-bridge connected")
-                this.bridge = bridge
-                NasBridgeManager.instance.setupBridge(bridge)
-            }
-
-            override fun onBridgeDisconnected(bridge: INasChannelBridge) {
-                LogUtil.i(TAG, "nas-bridge dis-connected")
-                this.bridge = null
-                NasBridgeManager.instance.disconnectBridge(bridge)
-            }
-
         })
     }
 }

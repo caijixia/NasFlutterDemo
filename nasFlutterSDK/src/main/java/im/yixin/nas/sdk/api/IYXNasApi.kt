@@ -2,8 +2,10 @@ package im.yixin.nas.sdk.api
 
 import android.content.Intent
 import androidx.fragment.app.Fragment
-import im.yixin.nas.sdk.event.SDKInitEvent
+import im.yixin.nas.sdk.entity.UserInfo
+import im.yixin.nas.sdk.entity.UserToken
 import im.yixin.nas.sdk.event.base.BaseNasRequest
+import im.yixin.nas.sdk.event.base.NasRequest
 import im.yixin.nas.sdk.event.base.NasResponse
 
 /**
@@ -14,11 +16,23 @@ interface IYXNasApi {
     fun obtainFlutterHost(): Fragment
 
     fun obtainFlutterIntent(): Intent
+
+    fun setTokenRequestListener(listener: ITokenRequestListener?)
+
+    fun requestUserInfo(callback: INasInvokeCallback<UserInfo>?)
+
+    fun requestLoginStatus(callback: INasInvokeCallback<Boolean>?)
+
+    fun authLogin(mobile: String?, token: String?, callback: INasInvokeCallback<Void>?)
+
+    fun logout(callback: INasInvokeCallback<Void>?)
 }
 
 interface INasInvokeConnector {
 
     fun onResponse(response: NasResponse)
+
+    fun onRequest(request: NasRequest, methodCall: IMethodCall<*>? = null)
 
     fun onBridgeConnected(bridge: INasChannelBridge)
 
@@ -27,17 +41,22 @@ interface INasInvokeConnector {
 
 interface INasChannelBridge {
 
-    fun invoke(request: BaseNasRequest, callback: INasCallback? = null)
-}
-
-interface INasCallback {
-
-    fun onSuccess(data: Any? = null)
-
-    fun onError(code: Int, message: String?)
+    fun <T> invoke(request: BaseNasRequest, callback: INasInvokeCallback<T>? = null)
 }
 
 interface INasInvokeCallback<T> {
 
     fun onResult(code: Int, message: String?, data: T?)
+}
+
+interface ITokenRequestListener {
+
+    fun onTokenRequest(methodCall: IMethodCall<UserToken>?)
+}
+
+interface IMethodCall<T> {
+
+    fun success(result: T?)
+
+    fun error(code: Int, message: String?)
 }

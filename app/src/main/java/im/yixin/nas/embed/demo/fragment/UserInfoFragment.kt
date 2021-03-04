@@ -1,15 +1,20 @@
 package im.yixin.nas.embed.demo.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.kaopiz.kprogresshud.KProgressHUD
+import im.yixin.nas.embed.demo.NasDemoApp
 import im.yixin.nas.embed.demo.R
-import im.yixin.nas.embed.demo.impl.NasBridgeManager
+import im.yixin.nas.embed.demo.impl.NasInvocationProxy
+import im.yixin.nas.embed.demo.impl.UserAction
 import im.yixin.nas.embed.demo.util.ToastUtil
-import im.yixin.nas.sdk.api.INasCallback
+import im.yixin.nas.sdk.YXNasSDK
+import im.yixin.nas.sdk.api.INasInvokeCallback
+import im.yixin.nas.sdk.const.YXNasConstants
 import im.yixin.nas.sdk.entity.UserInfo
 
 /**
@@ -33,35 +38,41 @@ class UserInfoFragment : Fragment(R.layout.nas_demo_fragment_user_info) {
         val btn_quit = view.findViewById<View>(R.id.btn_quit)
         btn_use_info.setOnClickListener {
             showLoading()
-            NasBridgeManager.instance.getCurrentUserInfo(object : INasCallback {
-                override fun onSuccess(data: Any?) {
-                    hideLoading()
-                    if (data is UserInfo?) {
-                        ToastUtil.showToast(context!!, "当前用户信息: $data")
-                    }
-                }
+            YXNasSDK.instance.requestUserInfo(object : INasInvokeCallback<UserInfo> {
 
-                override fun onError(code: Int, message: String?) {
+                override fun onResult(code: Int, message: String?, data: UserInfo?) {
+                    Log.i(
+                        NasDemoApp.TAG,
+                        "request-userInfo result code: $code, message: $message, data: $data ~"
+                    )
                     hideLoading()
-                    ToastUtil.showToast(context!!, "获取用户信息失败: code:$code, message:$message")
+                    if (code == YXNasConstants.ResultCode.CODE_SUCCESS) {
+                        ToastUtil.showToast(context!!, "当前用户信息: $data")
+                    } else {
+                        ToastUtil.showToast(context!!, "获取用户信息失败: code:$code, message:$message")
+                    }
                 }
 
             })
         }
 
+        val currentUserInfo = NasInvocationProxy.instance.getCurrentUserInfo()
+
         btn_login_status.setOnClickListener {
             showLoading()
-            NasBridgeManager.instance.getLoginStatus(object : INasCallback {
-                override fun onSuccess(data: Any?) {
-                    hideLoading()
-                    if (data is Boolean) {
-                        ToastUtil.showToast(context!!, if (data) "当前已登录" else "当前未登录")
-                    }
-                }
+            YXNasSDK.instance.requestLoginStatus(object : INasInvokeCallback<Boolean> {
 
-                override fun onError(code: Int, message: String?) {
+                override fun onResult(code: Int, message: String?, data: Boolean?) {
+                    Log.i(
+                        NasDemoApp.TAG,
+                        "request-loginStatus result code: $code, message: $message, data: $data ~"
+                    )
                     hideLoading()
-                    ToastUtil.showToast(context!!, "获取用户登录信息失败: code:$code, message:$message")
+                    if (code == YXNasConstants.ResultCode.CODE_SUCCESS && data is Boolean) {
+                        ToastUtil.showToast(context!!, if (data) "当前已登录" else "当前未登录")
+                    } else {
+                        ToastUtil.showToast(context!!, "获取用户登录信息失败: code:$code, message:$message")
+                    }
                 }
 
             })
@@ -69,15 +80,15 @@ class UserInfoFragment : Fragment(R.layout.nas_demo_fragment_user_info) {
 
         btn_quit.setOnClickListener {
             showLoading()
-            NasBridgeManager.instance.execUserLogout(object : INasCallback {
-                override fun onSuccess(data: Any?) {
+            NasInvocationProxy.instance.execUserLogout(object : INasInvokeCallback<Void> {
+                override fun onResult(code: Int, message: String?, data: Void?) {
+                    Log.i(NasDemoApp.TAG, "logout result code: $code, message: $message ~")
                     hideLoading()
-                    ToastUtil.showToast(context!!, "用户退出登录")
-                }
-
-                override fun onError(code: Int, message: String?) {
-                    hideLoading()
-                    ToastUtil.showToast(context!!, "获取用户退出失败: code:$code, message:$message")
+                    //设置本地userInfo数据
+                    NasInvocationProxy.instance.updateUserInfo(currentUserInfo.also {
+                        it?.isLogin = false
+                    })
+                    NasInvocationProxy.instance.notifyUserAction(UserAction.logoutSuccess)
                 }
 
             })

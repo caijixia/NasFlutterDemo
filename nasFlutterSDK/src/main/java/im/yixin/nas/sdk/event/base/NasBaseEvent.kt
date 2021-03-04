@@ -29,9 +29,9 @@ abstract class BaseNasRequest : IRequestCheck {
 
         //判断arguments类型
         if (arguments is IRequestEntrySet) {
-            return NasRequest(method, (arguments!! as IRequestEntrySet).toJSON())
+            return NasRequest(method, (arguments!! as IRequestEntrySet).toJSON().toString())
         } else if (arguments is JSONObject) {
-            return NasRequest(method, arguments)
+            return NasRequest(method, arguments.toString())
         } else if (arguments != null) {
             throw NasArgumentException("Type of arguments is illegal, and must be type of IRequestEntrySet or JSONObject ~")
         }
@@ -120,6 +120,13 @@ open class BaseNasResponse<T> protected constructor(var method: String?, var res
                     val result = ParseUtil.parseObject<Result<Boolean>>(response.result)
                     return GetUserStatusEvent.Response.ensureResponse(result)
                 }
+                YXNasConstants.Method.EVENT_METHOD_TOKEN_REQUEST -> {
+                    return TokenRequestEvent.Request()
+                }
+                YXNasConstants.Method.EVENT_METHOD_LOGOUT -> {
+                    val result = ParseUtil.parseVoidResult(response.result)
+                    return UserLogoutEvent.Response.ensureResponse(result)
+                }
             }
             return MethodIllegalResponse(
                 method = response.method,
@@ -145,15 +152,15 @@ open class BaseNasResponse<T> protected constructor(var method: String?, var res
 
     val bundle: NasResponse
         get() {
-            var jobject: JSONObject? = null
-            if (result != null) {
-                try {
-                    jobject = JSONObject(YXNasConstants.toJson(result))
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                }
-            }
-            return NasResponse(method!!, jobject)
+//            var jobject: JSONObject? = null
+//            if (result != null) {
+//                try {
+//                    jobject = JSONObject(YXNasConstants.toJson(result))
+//                } catch (ex: Exception) {
+//                    ex.printStackTrace()
+//                }
+//            }
+            return NasResponse(method!!, result)
         }
 
     override fun toString(): String {

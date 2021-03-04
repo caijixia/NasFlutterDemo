@@ -32,7 +32,7 @@ class MockTokenGetEvent {
                 return IRequestCheck.CheckResult(success = false, message = "手机号不能为空")
             }
 
-            if (StringUtil.checkMobile(mobile)) {
+            if (StringUtil.checkMobile(mobile).not()) {
                 return IRequestCheck.CheckResult(success = false, message = "手机号格式非法")
             }
             return null
@@ -60,7 +60,7 @@ class MockTokenGetEvent {
                     )
                 }
                 //返回成功，但result.data数据非法，解析为Response.4002进行返回
-                if (result.success() || UserToken.verify(result.data).not()) {
+                if (result.success() && UserToken.verify(result.data).not()) {
                     return Response(
                         result = Result.buildFailure(
                             code = YXNasConstants.ResultCode.CODE_RESULT_PARSE_ERROR,
