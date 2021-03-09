@@ -98,7 +98,7 @@ class YXNasSDK private constructor() : IYXNasApi {
     lateinit var context: Context
 
     var isInitialized = false
-    var useCacheEngine = true // 使用缓存flutter-engine
+    var useCacheEngine = false // 使用缓存flutter-engine
     var bridgeStore: NasFlutterBridgeStore? = null
 
     var isInitSuccess = false
